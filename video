@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅遊影片篩選</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .video-list {
+            flex: 2;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+        .video-item {
+            flex: 1 1 calc(50% - 20px); /* 每行兩個影片 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f9f9f9;
+            text-align: center;
+            max-width: calc(50% - 20px); /* 限制最大寬度 */
+        }
+        .video-item iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9; /* 保持影片比例為16:9 */
+            border: none;
+        }
+        .video-title {
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .filter-section {
+            flex: 1;
+            max-width: 300px;
+        }
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        .filter-group h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .filter-options {
+            margin-left: 20px;
+        }
+        .filter-options label {
+            display: block;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .filter-options input {
+            margin-right: 10px;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .filter-section {
+                max-width: 100%;
+                margin-bottom: 20px;
+            }
+            .video-item {
+                flex: 1 1 100%; /* 小螢幕時單行一個影片 */
+                max-width: 100%; /* 讓影片寬度占滿 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>旅遊影片篩選</h1>
+
+    <div class="main-container">
+        <!-- 篩選器區域 -->
+        <div class="filter-section">
+            <h2>篩選旅遊地點：</h2>
+            <div class="filter-group">
+                <h3>大洲</h3>
+                <div class="filter-options" id="continentFilters">
+                    <label><input type="checkbox" value="亞洲"> 亞洲</label>
+                    <label><input type="checkbox" value="歐洲"> 歐洲</label>
+                    <label><input type="checkbox" value="北美洲"> 北美洲</label>
+                    <label><input type="checkbox" value="大洋洲"> 大洋洲</label>
+                    <label><input type="checkbox" value="非洲"> 非洲</label>
+                    <label><input type="checkbox" value="南極洲"> 南極洲</label>
+                </div>
+            </div>
+            <div class="filter-group">
+                <h3>次區域</h3>
+                <div class="filter-options" id="regionFilters">
+                    <!-- 亞洲 -->
+                    <label><input type="checkbox" value="東北亞"> 東北亞</label>
+                    <label><input type="checkbox" value="東亞"> 東亞</label>
+                    <label><input type="checkbox" value="西亞"> 西亞</label>
+                    <label><input type="checkbox" value="東南亞"> 東南亞</label>
+                    <label><input type="checkbox" value="台灣"> 台灣</label>
+                    <!-- 歐洲 -->
+                    <label><input type="checkbox" value="北歐"> 北歐</label>
+                    <label><input type="checkbox" value="西歐"> 西歐</label>
+                    <label><input type="checkbox" value="中歐"> 中歐</label>
+                    <label><input type="checkbox" value="南歐"> 南歐</label>
+                    <!-- 非洲 -->
+                    <label><input type="checkbox" value="北非"> 北非</label>
+                    <label><input type="checkbox" value="西非"> 西非</label>
+                    <label><input type="checkbox" value="東非"> 東非</label>
+                    <label><input type="checkbox" value="南非"> 南非</label>
+                </div>
+            </div>
+            <div class="filter-group">
+                <h3>台灣地區</h3>
+                <div class="filter-options" id="taiwanRegionFilters">
+                    <label><input type="checkbox" value="北部"> 北部</label>
+                    <label><input type="checkbox" value="中部"> 中部</label>
+                    <label><input type="checkbox" value="南部"> 南部</label>
+                    <label><input type="checkbox" value="東部"> 東部</label>
+                    <label><input type="checkbox" value="離島"> 離島</label>
+                </div>
+            </div>
+
+            <h2>篩選影片時長：</h2>
+            <div class="filter-group">
+                <h3>時長</h3>
+                <div class="filter-options" id="durationFilters">
+                    <label><input type="checkbox" value="short"> 10分鐘以內</label>
+                    <label><input type="checkbox" value="medium"> 10~30分鐘</label>
+                    <label><input type="checkbox" value="long"> 30~60分鐘</label>
+                    <label><input type="checkbox" value="extra-long"> 60分鐘以上</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 影片區域 -->
+        <div class="video-list" id="videoList">
+            <!-- 篩選結果會顯示在此處 -->
+        </div>
+    </div>
+
+    <script>
+        // 影片資料庫
+        const videos = [
+            {
+                title: "影片1",
+                url: "https://www.youtube.com/embed/xwTQPyTGLAQ",
+                duration: 8,
+                tags: ["亞洲", "台灣", "南部"]
+            },
+            {
+                title: "影片2",
+                url: "https://www.youtube.com/embed/RQKvuoQH6Bc",
+                duration: 15,
+                tags: ["大洋洲"]
+            },
+            {
+                title: "影片3",
+                url: "https://www.youtube.com/embed/EtQOKSW1Vsg",
+                duration: 30,
+                tags: ["亞洲", "東北亞"]
+            },
+            {
+                title: "影片4",
+                url: "https://www.youtube.com/embed/0C3LeQiudMI",
+                duration: 18,
+                tags: ["歐洲", "西歐"]
+            }
+        ];
+
+        // 篩選邏輯
+        function filterVideos() {
+            const selectedContinents = getCheckedValues("continentFilters");
+            const selectedRegions = getCheckedValues("regionFilters");
+            const selectedTaiwanRegions = getCheckedValues("taiwanRegionFilters");
+            const selectedDurations = getCheckedValues("durationFilters");
+
+            let filteredVideos = videos.filter(video => {
+                if (selectedDurations.length > 0) {
+                    const durationMatch = selectedDurations.some(duration => {
+                        if (duration === "short") return video.duration <= 10;
+                        if (duration === "medium") return video.duration > 10 && video.duration <= 30;
+                        if (duration === "long") return video.duration > 30 && video.duration <= 60;
+                        if (duration === "extra-long") return video.duration > 60;
+                        return false;
+                    });
+                    if (!durationMatch) return false;
+                }
+
+                const selectedTags = [...selectedContinents, ...selectedRegions, ...selectedTaiwanRegions];
+                if (selectedTags.length === 0) return true;
+                return selectedTags.some(tag => video.tags.includes(tag));
+            });
+
+            displayVideos(filteredVideos);
+        }
+
+        function getCheckedValues(groupId) {
+            const checkboxes = document.querySelectorAll(`#${groupId} input:checked`);
+            return Array.from(checkboxes).map(checkbox => checkbox.value);
+        }
+
+        function displayVideos(filteredVideos) {
+            const videoList = document.getElementById("videoList");
+            videoList.innerHTML = "";
+            filteredVideos.forEach(video => {
+                const videoItem = document.createElement("div");
+                videoItem.classList.add("video-item");
+                videoItem.innerHTML = `
+                    <iframe src="${video.url}" allowfullscreen></iframe>
+                    <p class="video-title">${video.title}</p>
+                    <p>時長：${video.duration} 分鐘</p>
+                `;
+                videoList.appendChild(videoItem);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".filter-options input").forEach(input => {
+                input.addEventListener("change", filterVideos);
+            });
+
+            filterVideos();
+        });
+    </script>
+</body>
+</html>
